@@ -1,0 +1,11 @@
+###
+
+GET http://applecart.ebrtest.ru/api/v1/catalog/watch
+
+###
+
+GET http://applecart.ebrtest.ru/site/index
+
+###
+
+GET http://applecart.ebrtest.ru/api/v1/catalog/phones/iphone-se-2020-sg
