@@ -53,47 +53,11 @@ class OrderController extends \yii\rest\ActiveController
         if(!$user) return $response;
 
         $categories = Category::find()->andWhere(['status_id' => Category::STATUS_ACTIVE])->orderBy('sort')->all();
-        $categoriesData = ArrayHelper::toArray($categories, ['common\models\Category' => [
-            'id',
-            'alias',
-            'title',
-            'description',
-            'image' => function($model) {
-                return $model->getPathPicture();
-            }
-        ]]);
+        $categoriesData = ArrayHelper::toArray($categories, Category::apiArray());
         if($orders = Order::find()->andWhere(['user_id' => $user->id])->orderBy(['id' => SORT_DESC])->all()) {
             $ordersCount = count($orders);
 
-            $ordersData = ArrayHelper::toArray($orders, ['common\models\Order' => [
-                'id',
-                'status' => function($model) {
-                    return $model->status;
-                },
-                'created' => function($model) {
-                    return date('d.m.Y H:i', strtotime($model->created_at));
-                },
-                'quantity' => 'total_quantity',
-                'sum' => 'totalAmount',
-                'items' => function($model) {
-                    $productsData = [];
-                    $products = $model->products;
-
-                    foreach ($products as $product) {
-                        $productEntity = $product->product;
-
-                        $productsData[] = [
-                            'id' => $productEntity->id,
-                            'title' => $productEntity->title,
-                            'quantity' => $product->quantity,
-                            'price' => $productEntity->price,
-                            'productMedia' => $productEntity->productMedia[0]->getPhoto(400, 600, 'resize')
-                        ];
-                    }
-
-                    return $productsData;
-                }
-            ]]);
+            $ordersData = ArrayHelper::toArray($orders, Order::apiArray());
 
             $response['status'] = 'ok';
 
@@ -153,37 +117,7 @@ class OrderController extends \yii\rest\ActiveController
             $ordersData = [];
             $ordersData['quantity'] = count($orders);
 
-            $ordersData['data'] = ArrayHelper::toArray($orders, ['common\models\Order' => [
-                'id',
-                'status' => function ($model) {
-                    return $model->status;
-                },
-                'created' => function ($model) {
-                    return date('d M Y H:i', strtotime($model->created_at));
-                },
-                'quantity' => 'total_quantity',
-                'sum' => 'total_amount',
-                'items' => function ($model) {
-                    $productsData = [];
-                    $products = $model->products;
-
-                    foreach ($products as $product) {
-                        $productEntity = $product->product;
-
-                        $productsData[] = [
-                            'id' => $productEntity->id,
-                            'title' => $productEntity->title,
-                            'alias' => $productEntity->alias,
-                            'categoryAlias' => $productEntity->category->alias,
-                            'quantity' => $product->quantity,
-                            'price' => $productEntity->price,
-                            'productThumb' => $productEntity->productMedia[0]->getPhoto(400, 600, 'resize')
-                        ];
-                    }
-
-                    return $productsData;
-                }
-            ]]);
+            $ordersData['data'] = ArrayHelper::toArray($orders, Order::apiArray());
 
             $response = [
                 'status' => 'ok',

@@ -97,26 +97,7 @@ class CatalogController extends ActiveController {
             ],
         ]);
 
-        $productsData = ArrayHelper::toArray($productsProvider->getModels(),
-            ['common\models\Product' =>
-                [
-                    'id',
-                    'alias',
-                    'categoryAlias' => function($model) {
-                        return $model->category->alias;
-                    },
-                    'title',
-                    'productMedia' => function($model) {
-                        $mediaArr = [];
-                        $media = $model->productMedia;
-                        foreach ($media as $m) {
-                            $mediaArr[] = $m->type_id == ProductMedia::TYPE_IMAGE ? $m->getPhoto(160, 220, 'resize') : $m->url;
-                        };
-                        return $mediaArr;
-                    },
-                    'price',
-                    'old_price',
-                ]]
+        $productsData = ArrayHelper::toArray($productsProvider->getModels(), Product::apiArray()
         );
 
         $params = Param::find()->andWhere(['status_id' => Param::STATUS_ACTIVE])->all();
@@ -156,15 +137,7 @@ class CatalogController extends ActiveController {
         ]]);
 
         $categories = Category::find()->andWhere(['status_id' => Category::STATUS_ACTIVE])->orderBy('sort')->all();
-        $categoriesData = ArrayHelper::toArray($categories, ['common\models\Category' => [
-            'id',
-            'image' => function($model) {
-                return $model->getPathPicture();
-            },
-            'alias',
-            'title',
-            'description'
-        ]]);
+        $categoriesData = ArrayHelper::toArray($categories, Category::apiArray());
 
         return [
             "status" => "ok",
@@ -190,56 +163,10 @@ class CatalogController extends ActiveController {
             throw new NotFoundHttpException('Product not found');
         }
 
-        $productData = ArrayHelper::toArray($product, ['common\models\Product' =>
-            [
-                'id',
-                'alias',
-                'categoryAlias' => function($model) {
-                    return $model->category->alias;
-                },
-                'title',
-                'description',
-                'productMedia' => function($model) {
-                    $mediaArr = [];
-                    $media = $model->productMedia;
-                    foreach ($media as $m) {
-                        $mediaArr[] = $m->type_id == ProductMedia::TYPE_IMAGE ? $m->getPhoto(400, 600, 'resize') : $m->url;
-                    };
-                    return $mediaArr;
-                },
-                'productParams' => function($model) {
-                    $paramsArr = [];
-                    $params = $model->productParams;
-
-                    if($params) {
-                        foreach ($params as $p) {
-                            $param = [
-                              'title' => $p->param->title,
-                                'value' => $p->value,
-                                'unit' => $p->param->unit
-                            ];
-
-                            $paramsArr[] = $param;
-                        }
-                    }
-
-                    return $paramsArr;
-                },
-                'price',
-                'old_price',
-            ]]
-        );
+        $productData = ArrayHelper::toArray($product, Product::apiArray());
 
         $categories = Category::find()->andWhere(['status_id' => Category::STATUS_ACTIVE])->orderBy('sort')->all();
-        $categoriesData = ArrayHelper::toArray($categories, ['common\models\Category' => [
-            'id',
-            'image' => function($model) {
-                return $model->getPathPicture();
-            },
-            'alias',
-            'title',
-            'description'
-        ]]);
+        $categoriesData = ArrayHelper::toArray($categories, Category::apiArray());
 
         return [
             "status" => "ok",

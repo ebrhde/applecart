@@ -76,4 +76,47 @@ class Product extends \yii\db\ActiveRecord
     public function getCategory() {
         return $this->hasOne(Category::class, ['id' => 'category_id']);
     }
+
+    public static function apiArray()
+    {
+        return ['common\models\Product' =>
+            [
+                'id',
+                'alias',
+                'categoryAlias' => function ($model) {
+                    return $model->category->alias;
+                },
+                'title',
+                'description',
+                'productMedia' => function ($model) {
+                    $mediaArr = [];
+                    $media = $model->productMedia;
+                    foreach ($media as $m) {
+                        $mediaArr[] = $m->type_id == ProductMedia::TYPE_IMAGE ? $m->getPhoto(400, 600, 'resize') : $m->url;
+                    };
+                    return $mediaArr;
+                },
+                'productParams' => function ($model) {
+                    $paramsArr = [];
+                    $params = $model->productParams;
+
+                    if ($params) {
+                        foreach ($params as $p) {
+                            $param = [
+                                'title' => $p->param->title,
+                                'value' => $p->value,
+                                'unit' => $p->param->unit
+                            ];
+
+                            $paramsArr[] = $param;
+                        }
+                    }
+
+                    return $paramsArr;
+                },
+                'price',
+                'old_price',
+            ]
+        ];
+    }
 }

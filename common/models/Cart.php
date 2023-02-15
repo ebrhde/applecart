@@ -65,4 +65,10 @@ class Cart extends \yii\db\ActiveRecord
     {
         return $this->hasMany(CartProduct::class, ['cart_id' => 'id']);
     }
+
+//    public static function apiArray() {
+//        return [
+//          'common\models\Cart'
+//        ];
+//    }
 }

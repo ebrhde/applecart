@@ -100,4 +100,16 @@ class Category extends \yii\db\ActiveRecord
     public function getProducts() {
         return $this->hasMany(Product::class, ['category_id' => 'id']);
     }
+
+    public static function apiArray() {
+        return ['common\models\Category' => [
+            'id',
+            'alias',
+            'title',
+            'description',
+            'image' => function($model) {
+                return $model->getPathPicture();
+            }
+        ]];
+    }
 }

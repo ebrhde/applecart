@@ -108,4 +108,38 @@ class Order extends \yii\db\ActiveRecord
             ->setHtmlBody($body)
             ->send();
     }
+
+    public static function apiArray() {
+        return ['common\models\Order' => [
+            'id',
+            'status' => function($model) {
+                return $model->status;
+            },
+            'created' => function($model) {
+                return date('d M Y H:i', strtotime($model->created_at));
+            },
+            'quantity' => 'total_quantity',
+            'sum' => 'total_amount',
+            'items' => function($model) {
+                $productsData = [];
+                $products = $model->products;
+
+                foreach ($products as $product) {
+                    $productEntity = $product->product;
+
+                    $productsData[] = [
+                        'id' => $productEntity->id,
+                        'title' => $productEntity->title,
+                        'alias' => $productEntity->alias,
+                        'categoryAlias' => $productEntity->category->alias,
+                        'quantity' => $product->quantity,
+                        'price' => $productEntity->price,
+                        'productThumb' => $productEntity->productMedia[0]->getPhoto(400, 600, 'resize')
+                    ];
+                }
+
+                return $productsData;
+            }
+        ]];
+    }
 }

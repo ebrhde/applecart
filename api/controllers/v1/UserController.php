@@ -5,6 +5,7 @@ namespace api\controllers\v1;
 use api\models\SignupForm;
 use common\models\Cart;
 use common\models\Order;
+use common\models\Product;
 use common\models\ProductMedia;
 use Yii;
 use yii\rest\ActiveController;
@@ -120,44 +121,8 @@ class UserController extends ActiveController {
                 $cartData['totalCount'] = $cart->total_quantity;
 
                 foreach ($cartItems as $cartItem) {
-                    $cartData['items'][] = array_merge(['quantity' => $cartItem->quantity], ArrayHelper::toArray($cartItem->product, ['common\models\Product' =>
-                            [
-                                'id',
-                                'alias',
-                                'categoryAlias' => function($model) {
-                                    return $model->category->alias;
-                                },
-                                'title',
-                                'description',
-                                'productMedia' => function ($model) {
-                                    $mediaArr = [];
-                                    $media = $model->productMedia;
-                                    foreach ($media as $m) {
-                                        $mediaArr[] = $m->type_id == ProductMedia::TYPE_IMAGE ? $m->getPhoto(400, 600, 'resize') : $m->url;
-                                    };
-                                    return $mediaArr;
-                                },
-                                'productParams' => function ($model) {
-                                    $paramsArr = [];
-                                    $params = $model->productParams;
-
-                                    if ($params) {
-                                        foreach ($params as $p) {
-                                            $param = [
-                                                'title' => $p->param->title,
-                                                'value' => $p->value,
-                                                'unit' => $p->param->unit
-                                            ];
-
-                                            $paramsArr[] = $param;
-                                        }
-                                    }
-
-                                    return $paramsArr;
-                                },
-                                'price',
-                                'old_price',
-                            ]]
+                    $cartData['items'][] = array_merge(['quantity' => $cartItem->quantity],
+                        ArrayHelper::toArray($cartItem->product, Product::apiArray()
                     ));
                 }
             }
@@ -169,37 +134,7 @@ class UserController extends ActiveController {
                 $ordersData = [];
                 $ordersData['quantity'] = count($orders);
 
-                $ordersData['data'] = ArrayHelper::toArray($orders, ['common\models\Order' => [
-                    'id',
-                    'status' => function($model) {
-                        return $model->status;
-                    },
-                    'created' => function($model) {
-                        return date('d M Y H:i', strtotime($model->created_at));
-                    },
-                    'quantity' => 'total_quantity',
-                    'sum' => 'total_amount',
-                    'items' => function($model) {
-                        $productsData = [];
-                        $products = $model->products;
-
-                        foreach ($products as $product) {
-                            $productEntity = $product->product;
-
-                            $productsData[] = [
-                                'id' => $productEntity->id,
-                                'title' => $productEntity->title,
-                                'alias' => $productEntity->alias,
-                                'categoryAlias' => $productEntity->category->alias,
-                                'quantity' => $product->quantity,
-                                'price' => $productEntity->price,
-                                'productThumb' => $productEntity->productMedia[0]->getPhoto(400, 600, 'resize')
-                            ];
-                        }
-
-                        return $productsData;
-                    }
-                ]]);
+                $ordersData['data'] = ArrayHelper::toArray($orders, Order::apiArray());
             }
 
             $token = $this->generateJwt($user);
